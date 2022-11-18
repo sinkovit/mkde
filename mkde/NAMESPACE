@@ -1,0 +1,5 @@
+useDynLib(mkde)
+import(Rcpp)
+importFrom(sp, coordinates)
+importFrom(raster, raster, extent, extract, image, ncol, nrow, res, values, stack, addLayer)
+exportPattern("^[[:alpha:]]+")
