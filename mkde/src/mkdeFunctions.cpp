@@ -7,7 +7,6 @@
  *****************************************************************************/
 
 #include "mkdeFunctions.h"
-#include <algorithm>
 
 using namespace std;
 
@@ -290,6 +289,9 @@ RcppExport SEXP mkde2dGrid02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP useObs,
                     ydens[i2] =  integrateNormal(yGrid[i2] - 0.5*ySz, yGrid[i2] + 0.5*ySz, eY, sqrt(sig2xy));
                 }
 
+#ifdef _OPENMP		
+#pragma omp parallel for
+#endif
                 for (int i1 = std::max(0, i1k-halo1); i1 < std::min(nX, i1k+halo1); i1++) { // x-dimension
                     double voxx = xGrid[i1]; // voxel x
                     double xdens = integrateNormal(voxx - 0.5*xSz, voxx + 0.5*xSz, eX, sqrt(sig2xy));
@@ -625,6 +627,9 @@ RcppExport SEXP mkde3dGridv02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP obsZ, SEXP u
                     zdens[i3] = integrateNormal(zGrid[i3] - 0.5*zSz, zGrid[i3] + 0.5*zSz, eZ, sqrt(sig2z));
                 }
 
+#ifdef _OPENMP		
+#pragma omp parallel for
+#endif
                 for (int i1 = std::max(0, i1k-halo1); i1 < std::min(nX, i1k+halo1); i1++) { // x-dimension
                     double voxx = xGrid[i1]; // voxel x
                     double xdens = integrateNormal(voxx - 0.5*xSz, voxx + 0.5*xSz, eX, sqrt(sig2xy));
