@@ -4,7 +4,7 @@ Title: 2D and 3D movement-based kernel density estimates (MKDEs)
 Version: 0.1
 Date: 2011-08-23
 Author: Jeff A. Tracey, James Sheppard, Jun Zhu, Robert Sinkovts, Amit Chourasia, Glenn Lockwood, and Robert N. Fisher
-Maintainer: Jeff A. Tracey <jatracey@usgs.gov>
+Maintainer: Robert Sinkovits <sinkovit@sdsc.edu>
 Description: Provides functions to compute and visualize movement-based kernel density estimates (MKDEs) for animal utilization distributions in 2 or 3 spatial dimensions.
 License: GPL (>= 3)
 LazyLoad: yes
