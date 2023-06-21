@@ -33,7 +33,7 @@ writeToXDMF(mkde.obj, fname, nodat="NA", cumprob=FALSE)
   \email{jsheppard@sandiegozoo.org} \cr
   Amit Chourasia, MS \cr
   San Diego Supercomputer Center \cr
-  \email{amitsdsc.edu}
+  \email{amit@sdsc.edu}
 }
 \examples{
 library(raster)
