@@ -61,4 +61,7 @@ mv.dat <- dens.res$move.dat
 # Save as VTK file
 writeToVTK(mkde.obj, "condor_3dMKDE.vtk",
 description="Example California condor 3D MKDE")
+
+# Clean up files
+unlink("condor_3dMKDE.vtk")
 }

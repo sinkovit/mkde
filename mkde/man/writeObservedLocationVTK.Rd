@@ -48,4 +48,7 @@ ny, min(values(condordem), na.rm=TRUE), 30.0, 100)
 
 writeObservedLocationVTK(mv.dat, mkde.obj,
 "Example California condor locations", "condor_locations.vtk")
+
+# Clean up files
+unlink("condor_locations.vtk")
 }

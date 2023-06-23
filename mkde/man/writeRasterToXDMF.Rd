@@ -37,4 +37,8 @@ library(raster)
 data(condordem)
 # Save as XDMF (notice no file extension in file name)
 writeRasterToXDMF(condordem, "condor_dem")
+
+# Clean up files
+unlink("condor_dem.dat")
+unlink("condor_dem.xdmf")
 }

@@ -58,4 +58,8 @@ mv.dat <- dens.res$move.dat
 
 # Write file (note no file extension!)
 writeToXDMF(mkde.obj, "condor_3dMKDE")
+
+# Clean up files
+unlink("condor_3dMKDE.dat")
+unlink("condor_3dMKDE.xdmf")
 }

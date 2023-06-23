@@ -65,4 +65,7 @@ elev.b <- raster(condordem120)
 values(elev.b) <- round(f.B(elev.val))
 writeRasterToVTK(condordem120, elev.r, elev.g, elev.b, "Elevation for
 California condor Example", "condor_dem.vtk")
+
+# Clean up files
+unlink("condor_dem.vtk")
 }

@@ -52,4 +52,7 @@ ny, min(values(condordem), na.rm=TRUE), 30.0, 100)
 
 writeInterpolatedPathVTK(mv.dat, mkde.obj,
 "Example California condor move steps", "condor_path.vtk")
+
+# Clean up files
+unlink("condor_path.vtk")
 }

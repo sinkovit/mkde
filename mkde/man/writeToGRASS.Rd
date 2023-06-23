@@ -56,4 +56,7 @@ mv.dat <- dens.res$move.dat
 
 # Write file
 writeToGRASS(mkde.obj, "ascii3d.txt")
+
+# Clean up files
+unlink("ascii3d.txt")
 }
