@@ -563,7 +563,7 @@ writeRasterToXDMF <- function(rast, fname, nodat="NA") {
   r.v <- as.vector(r.v, mode="numeric")
   fnXDMF <- paste(fname, ".xdmf", sep="")
   fnDAT <- paste(fname, ".dat", sep="")
-  .Call("writeRasterToXDMF", r.x, r.y, r.v, fnXDMF, fnDAT, PACKAGE = "mkde")
+  .Call("writeRasterToXDMF02", r.x, r.y, r.v, fnXDMF, fnDAT, PACKAGE = "mkde")
 }
 
 writeRasterToVTK <- function(elev, r.rst, g.rst, b.rst, descr, fname) {
@@ -590,7 +590,7 @@ writeRasterToVTK <- function(elev, r.rst, g.rst, b.rst, descr, fname) {
   r.b <- t(r.b[nrw:1,]) # flip
   r.b <- as.vector(r.b, mode="numeric")
   # (SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP filenameVTK)
-  .Call("writeRasterToVTK", r.x, r.y, r.v, r.r, r.g, r.b, descr, fname, PACKAGE="mkde")
+  .Call("writeRasterToVTK02", r.x, r.y, r.v, r.r, r.g, r.b, descr, fname, PACKAGE="mkde")
 }
 
 writeObservedLocationVTK <- function(move.dat, mkde.obj, 

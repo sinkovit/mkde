@@ -1281,7 +1281,7 @@ RcppExport SEXP writeMKDE3DtoXDMF(SEXP xgrid, SEXP ygrid, SEXP zgrid, SEXP densi
     return Rcpp::wrap(1);
 }
 
-RcppExport SEXP writeRasterToXDMF(SEXP xgrid, SEXP ygrid, SEXP rast, SEXP filenameXDMF, SEXP filenameDAT) {
+RcppExport SEXP writeRasterToXDMF02(SEXP xgrid, SEXP ygrid, SEXP rast, SEXP filenameXDMF, SEXP filenameDAT) {
     Rcpp::NumericVector xGrid(xgrid); // cell centers in the x-dimension
     Rcpp::NumericVector yGrid(ygrid); // cell centers in the y-dimension
     int nX = (long)xGrid.length();
@@ -1383,7 +1383,7 @@ RcppExport SEXP writeRasterToXDMF(SEXP xgrid, SEXP ygrid, SEXP rast, SEXP filena
 }
 
 
-RcppExport SEXP writeRasterToVTK(SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP description, SEXP filenameVTK) {
+RcppExport SEXP writeRasterToVTK02(SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP description, SEXP filenameVTK) {
     Rcpp::NumericVector xGrid(xgrid); // cell centers in the x-dimension
     Rcpp::NumericVector yGrid(ygrid); // cell centers in the y-dimension
     int nX = (long)xGrid.length();
