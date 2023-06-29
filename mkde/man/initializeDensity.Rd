@@ -50,7 +50,7 @@ is an updated move data object and the second is an updated MKDE object.
 \examples{
 library(raster)
 data(condor)
-condor <- condor[1:10,] # simply to make example run more quickly
+condor <- condor[1:20,] # simply to make example run more quickly
 mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, 
 z.obs=condor$z, sig2obs=25.0, sig2obs.z=81.0, t.max=65.0)
 

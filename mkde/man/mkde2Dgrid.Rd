@@ -49,17 +49,25 @@ mkde2Dgrid(mkde.obj, move.dat, t.step, d.thresh)
 \examples{
 library(raster)
 data(panda)
-mv.dat <- initializeMovementData(panda$time, panda$x,
-panda$y, t.max=185.0, sig2obs=25.0)
-mv.dat <- initializeMovementData(panda$time, panda$x, panda$y, 
-sig2obs=25.0, t.max=185.0)
 
-data(pandadem)
-cell.sz <- mean(res(pandadem))
-ext <- extent(pandadem)
-nx <- ncol(pandadem)
-ny <- nrow(pandadem)
-mkde.obj <- initializeMKDE2D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz, ny)
+# Find min/max coordinates and add buffer
+xmax = max(panda$x) + 100
+xmin = min(panda$x) - 100
+ymax = max(panda$y) + 100
+ymin = min(panda$y) - 100
 
+# Calculate grid dimensions
+xrange <- xmax - xmin
+yrange <- ymax - ymin
+cell.sz = 30
+nx <- as.integer(xrange/cell.sz)
+ny <- as.integer(yrange/cell.sz)
+
+mv.dat <- initializeMovementData(panda$time, panda$x, panda$y, t.max=185.0, sig2obs=25.0)
+if (all(is.na(mv.dat$sig2xy))) {
+  mv.dat <- estVarMKDE(mv.dat)
+}
+
+mkde.obj <- initializeMKDE2D(xmin, cell.sz, nx, ymin, cell.sz, ny)
 res <- mkde2Dgrid(mkde.obj, mv.dat, 10.0, 1e-20)
 }

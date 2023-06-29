@@ -38,24 +38,26 @@ computeContourValues(mkde.obj, prob)
 \examples{
 library(raster)
 data(condor)
-condor <- condor[1:10,] # simply to make example run more quickly
-mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, 
-z.obs=condor$z, sig2obs=25.0, sig2obs.z=81.0, t.max=65.0)
 
-data(condordem120)
-cell.sz <- mean(res(condordem120))
-ext <- extent(condordem120)
-nx <- ncol(condordem120)
-ny <- nrow(condordem120)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
-ny, min(values(condordem120), na.rm=TRUE), cell.sz, 25)
+# Find min/max coordinates and add buffer
+xmax = max(condor$x) + 1000
+xmin = min(condor$x) - 1000
+ymax = max(condor$y) + 1000
+ymin = min(condor$y) - 1000
 
-# note: we use a raster coarse integration time step so the
-# example runs faster
-dens.res <- initializeDensity(mkde.obj, mv.dat, integration.step=10.0)
+# Calculate grid dimensions
+xrange <- xmax - xmin
+yrange <- ymax - ymin
+cell.sz = 150
+nx <- as.integer(xrange/cell.sz)
+ny <- as.integer(yrange/cell.sz)
+
+mv.dat <- initializeMovementData(condor$t, condor$x, condor$y, sig2obs=25.0, t.max=185.0)
+mkde.obj <- initializeMKDE2D(xmin, cell.sz, nx, ymin, cell.sz, ny)
+dens.res <- initializeDensity(mkde.obj, mv.dat)
+
 mkde.obj <- dens.res$mkde.obj
 mv.dat <- dens.res$move.dat
-
 my.quantiles <- c(0.95, 0.75, 0.50)
 res <- computeContourValues(mkde.obj, my.quantiles)
 print(res)

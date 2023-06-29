@@ -49,18 +49,27 @@ mkde3Dgrid(mkde.obj, move.dat, t.step, d.thresh)
 \examples{
 library(raster)
 data(condor)
-condor <- condor[1:10,] # simply to make example run more quickly
-mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, 
-z.obs=condor$z, sig2obs=25.0, sig2obs.z=81.0, t.max=65.0)
 
-data(condordem120)
-cell.sz <- mean(res(condordem120))
-ext <- extent(condordem120)
-nx <- ncol(condordem120)
-ny <- nrow(condordem120)
+# Find min/max coordinates and add buffer
+xmax = max(condor$x) + 1000
+xmin = min(condor$x) - 1000
+ymax = max(condor$y) + 1000
+ymin = min(condor$y) - 1000
+
+# Calculate grid dimensions
+xrange <- xmax - xmin
+yrange <- ymax - ymin
+cell.sz = 600
+nx <- as.integer(xrange/cell.sz)
+ny <- as.integer(yrange/cell.sz)
 nz <- ceiling(3000.0/cell.sz)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
-ny, 0.0, cell.sz, nz)
 
+mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, z.obs=condor$z, t.max=185.0,
+sig2obs=25.0, sig2obs.z=81.0)
+if (all(is.na(mv.dat$sig2xy))) {
+  mv.dat <- estVarMKDE(mv.dat)
+}
+
+mkde.obj <- initializeMKDE3D(xmin, cell.sz, nx, ymin, cell.sz, ny, 0.0, cell.sz, nz)
 res <- mkde3Dgrid(mkde.obj, mv.dat, 5.0, 1e-20)
 }

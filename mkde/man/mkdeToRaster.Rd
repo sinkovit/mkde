@@ -34,7 +34,6 @@ level.
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-\dontrun{
 library(raster)
 # set up MKDE object
 data(pandadem)
@@ -55,5 +54,4 @@ mkde.obj <- dens.res$mkde.obj
 mv.dat <- dens.res$move.dat
 mkde.rst <- mkdeToRaster(mkde.obj)
 plot(mkde.rst)
-}
 }
