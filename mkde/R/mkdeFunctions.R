@@ -100,31 +100,29 @@ initializeMovementData <- function(t.obs, x.obs, y.obs, z.obs=NULL,
   return(move.dat)
 }
 
-# Set z lower bound from raster
-#setMinimumZfromRaster <- function(mkde.obj, raster.layer) {
-#  xy <- expand.grid(x=mkde.obj$x, y=mkde.obj$y)
-#  z.tmp <- extract(raster.layer, xy)
-  # now put in mkde.obj$z.min
-#  ij <- as.matrix(expand.grid(i=1:mkde.obj$nx, j=1:mkde.obj$ny))
-#  mkde.obj$z.min[ij] <- as.numeric(z.tmp)
-#  i <- which(is.na(mkde.obj$z.min))
-#  zCellSize <- mkde.obj$z[2] - mkde.obj$z[1]
-#  mkde.obj$z.min[i] <- (min(mkde.obj$z) - zCellSize)
-#  return(mkde.obj)
-#}
+setMinimumZfromRaster <- function(mkde.obj, spat.raster) {
+  xy <- base::expand.grid(x=mkde.obj$x, y=mkde.obj$y)
+  z.tmp <- terra::extract(spat.raster, xy)
+  z.tmp <- z.tmp$lyr.1
+  ij <- base::as.matrix(base::expand.grid(i = 1:mkde.obj$nx, j = 1:mkde.obj$ny))
+  mkde.obj$z.min[ij] <- z.tmp
+  i <- which(is.na(mkde.obj$z.min))
+  zCellSize <- mkde.obj$z[2] - mkde.obj$z[1]
+  mkde.obj$z.min[i] <- min(mkde.obj$z) - zCellSize
+  return(mkde.obj)
+}
 
-# Set z upper bound from raster
-#setMaximumZfromRaster <- function(mkde.obj, raster.layer) {
-#  xy <- expand.grid(x=mkde.obj$x, y=mkde.obj$y)
-#  z.tmp <- extract(raster.layer, xy)
-  # now put in mkde.obj$z.max
-#  ij <- as.matrix(expand.grid(i=1:mkde.obj$nx, j=1:mkde.obj$ny))
-#  mkde.obj$z.max[ij] <- as.numeric(z.tmp)
-#  i <- which(is.na(mkde.obj$z.max))
-#  zCellSize <- mkde.obj$z[2] - mkde.obj$z[1]
-#  mkde.obj$z.max[i] <-(max(mkde.obj$z) + zCellSize)
-#  return(mkde.obj)
-#}
+setMaximumZfromRaster <- function(mkde.obj, spat.raster) {
+  xy <- base::expand.grid(x=mkde.obj$x, y=mkde.obj$y)
+  z.tmp <- terra::extract(spat.raster, xy)
+  z.tmp <- z.tmp$lyr.1
+  ij <- base::as.matrix(base::expand.grid(i = 1:mkde.obj$nx, j = 1:mkde.obj$ny))
+  mkde.obj$z.max[ij] <- z.tmp
+  i <- which(is.na(mkde.obj$z.max))
+  zCellSize <- mkde.obj$z[2] - mkde.obj$z[1]
+  mkde.obj$z.max[i] <- max(mkde.obj$z) - zCellSize
+  return(mkde.obj)
+}
 
 # Set z lower bound from constant
 setMinimumZfromConstant <- function(mkde.obj, val) {
