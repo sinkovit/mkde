@@ -513,7 +513,7 @@ mkdeToTerra <- function(mkde.obj) {
 terraToContour <- function(terra.obj, levels, crsstr) {
   
   # Check if terra.obj is NULL or empty
-  if (is.null(terra.obj)|| sum(!is.na(values(terra.obj))) == 0) {
+  if (is.null(terra.obj)|| sum(!is.na(terra::values(terra.obj))) == 0) {
     
     stop("SpatRaster object is empty or NULL.")
     
@@ -586,49 +586,49 @@ writeToXDMF <- function(mkde.obj, fname, nodat="NA", cumprob=FALSE) {
   } # don't do anything for other dimensions...YET
 }
 
-#writeRasterToXDMF <- function(rast, fname, nodat="NA") {
-#  r.xy <- coordinates(rast)
-#  ext <- extent(rast)
-#  n.xy <- dim(rast)
-#  cell.sz <- res(rast)
-#  r.x <- ext@xmin + 0.5*cell.sz[1] + (0:(n.xy[2] - 1))*cell.sz[1]
-#  r.y <- ext@ymin + 0.5*cell.sz[2] + (0:(n.xy[1] - 1))*cell.sz[2]
-#  r.v <- values(rast, format="matrix")
-#  nrw <- base::nrow(r.v)
-#  ncl <- base::ncol(r.v)
-#  r.v <- t(r.v[nrw:1,]) # flip
-#  r.v <- as.vector(r.v, mode="numeric")
-#  fnXDMF <- paste(fname, ".xdmf", sep="")
-#  fnDAT <- paste(fname, ".dat", sep="")
-#  .Call("writeRasterToXDMF", r.x, r.y, r.v, fnXDMF, fnDAT, PACKAGE = "mkde")
-#}
+writeRasterToXDMF <- function(rast, fname, nodat="NA") {
+  r.xy <- terra::xyFromCell(rast, 1:terra::ncell(rast))
+  ext <- terra::ext(rast)
+  n.xy <- base::dim(rast)
+  cell.sz <- terra::res(rast)
+  r.x <- ext[1] + 0.5 * cell.sz[1] + (0:(n.xy[2] - 1)) * cell.sz[1]
+  r.y <- ext[3] + 0.5 * cell.sz[2] + (0:(n.xy[1] - 1)) * cell.sz[2]
+  nrw <- base::nrow(rast)
+  ncl <- base::ncol(rast)
+  r.v <- t(matrix(rast, nrow=ncl, ncol=nrw)) # flipped because of transposition
+  r.v <- base::t(r.v[nrw:1,]) # flip
+  r.v <- as.vector(r.v, mode="numeric")
+  fnXDMF <- paste(fname, ".xdmf", sep="")
+  fnDAT <- paste(fname, ".dat", sep="")
+  
+  .Call("writeRasterToXDMF", r.x, r.y, r.v, fnXDMF, fnDAT, PACKAGE = "mkde")
+}
 
-#writeRasterToVTK <- function(elev, r.rst, g.rst, b.rst, descr, fname) {
-  # make sure all rasters are same dims, etc.
-#  r.xy <- coordinates(elev)
-#  ext <- extent(elev)
-#  n.xy <- dim(elev)
-#  cell.sz <- res(elev)
-#  r.x <- ext@xmin + 0.5*cell.sz[1] + (0:(n.xy[2] - 1))*cell.sz[1]
-#  r.y <- ext@ymin + 0.5*cell.sz[2] + (0:(n.xy[1] - 1))*cell.sz[2]
-#  r.v <- raster::values(elev, format="matrix")
-#  nrw <- base::nrow(r.v)
-#  ncl <- base::ncol(r.v)
-#  r.v <- t(r.v[nrw:1,]) # flip
-#  r.v <- as.vector(r.v, mode="numeric")
-  #
-#  r.r <- values(r.rst, format="matrix")
-#  r.r <- t(r.r[nrw:1,]) # flip
-#  r.r <- as.vector(r.r, mode="numeric")
-#  r.g <- values(g.rst, format="matrix")
-#  r.g <- t(r.g[nrw:1,]) # flip
-#  r.g <- as.vector(r.g, mode="numeric")
-#  r.b <- raster::values(b.rst, format="matrix")
-#  r.b <- t(r.b[nrw:1,]) # flip
-#  r.b <- as.vector(r.b, mode="numeric")
-  # (SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP filenameVTK)
-#  .Call("writeRasterToVTK", r.x, r.y, r.v, r.r, r.g, r.b, descr, fname, PACKAGE="mkde")
-#}
+writeRasterToVTK <- function(elev, r.rst, g.rst, b.rst, descr, fname) {
+  r.xy <- terra::xyFromCell(elev, 1:terra::ncell(elev))
+  ext <- terra::ext(elev)
+  n.xy <- base::dim(elev)
+  cell.sz <- terra::res(elev)
+  r.x <- ext[1] + 0.5 * cell.sz[1] + (0:(n.xy[2] - 1)) * cell.sz[1]
+  r.y <- ext[3] + 0.5 * cell.sz[2] + (0:(n.xy[1] - 1)) * cell.sz[2]
+  r.v <- t(matrix(elev, nrow=base::ncol(elev), ncol=base::nrow(elev)))
+  nrw <- base::nrow(r.v)
+  ncl <- base::ncol(r.v)
+  r.v <- base::t(r.v[nrw:1,]) # flip
+  r.v <- as.vector(r.v, mode="numeric")
+  
+  r.r <- t(matrix(r.rst, nrow=base::ncol(r.rst), ncol=base::nrow(r.rst)))
+  r.r <- base::t(r.r[nrw:1,]) # flip
+  r.r <- as.vector(r.r, mode="numeric")
+  r.g <- t(matrix(g.rst, nrow=base::ncol(g.rst), ncol=base::nrow(g.rst)))
+  r.g <- base::t(r.g[nrw:1,]) # flip
+  r.g <- as.vector(r.g, mode="numeric")
+  r.b <- t(matrix(b.rst, nrow=base::ncol(b.rst), ncol=base::nrow(b.rst)))
+  r.b <- base::t(r.b[nrw:1,]) # flip
+  r.b <- as.vector(r.b, mode="numeric")
+  
+  .Call("writeRasterToVTK", r.x, r.y, r.v, r.r, r.g, r.b, descr, fname, PACKAGE="mkde")
+}
 
 writeObservedLocationVTK <- function(move.dat, mkde.obj, 
                                      description="Observed Locations", 
