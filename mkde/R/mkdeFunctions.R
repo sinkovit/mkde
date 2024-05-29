@@ -8,6 +8,7 @@
 #library(Rcpp)
 #library(sf)
 #library(terra)
+#library(graphics)
 
 # ---------------------------------------------------------------------
 # Functions to initialize data structures
@@ -469,7 +470,7 @@ plotMKDE <- function(mkde.obj, z.index=1, probs=c(0.99, 0.95, 0.90, 0.75, 0.5, 0
     dens.dat <- mkde.obj$d[,,1]
   }
   cont.vals <- computeContourValues(mkde.obj, probs)
-  base::image(mkde.obj$x, mkde.obj$y, dens.dat, breaks=cont.vals$threshold, col=cmap, add=add, ...)
+  graphics::image(mkde.obj$x, mkde.obj$y, dens.dat, breaks=cont.vals$threshold, col=cmap, add=add, ...)
 }
 
 # ---------------------------------------------------------------------
