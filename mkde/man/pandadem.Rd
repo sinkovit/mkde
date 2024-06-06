@@ -22,8 +22,9 @@ URL: http://asterweb.jpl.nasa.gov/gdem.asp
 Tachikawa, T., Hato, M., Kaku, M. & Iwasaki, A. (2011). The characteristics of ASTER GDEM version 2, IGARSS.
 }
 \examples{
-library(raster)
-data(pandadem)
+library(terra)
+fpath <- system.file("extdata", "pandadem.RDS", package="mkde")
+pandadem <- terra::readRDS(fpath)
 plot(pandadem)
 }
 \keyword{datasets}

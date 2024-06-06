@@ -6,8 +6,8 @@
 # ------------------------------------------------------------------------------
 
 #library(Rcpp)
-#library(raster)
-#library(sp)
+#library(sf)
+#library(terra)
 
 # ---------------------------------------------------------------------
 # Functions to initialize data structures
@@ -100,29 +100,27 @@ initializeMovementData <- function(t.obs, x.obs, y.obs, z.obs=NULL,
   return(move.dat)
 }
 
-# Set z lower bound from raster
-setMinimumZfromRaster <- function(mkde.obj, raster.layer) {
-  xy <- expand.grid(x=mkde.obj$x, y=mkde.obj$y)
-  z.tmp <- extract(raster.layer, xy)
-  # now put in mkde.obj$z.min
-  ij <- as.matrix(expand.grid(i=1:mkde.obj$nx, j=1:mkde.obj$ny))
-  mkde.obj$z.min[ij] <- as.numeric(z.tmp)
+setMinimumZfromRaster <- function(mkde.obj, spat.raster) {
+  xy <- base::expand.grid(x=mkde.obj$x, y=mkde.obj$y)
+  z.tmp <- terra::extract(spat.raster, xy)
+  z.tmp <- as.list(z.tmp[2])$layer ### OLD z.tmp <- z.tmp$lyr.1
+  ij <- base::as.matrix(base::expand.grid(i = 1:mkde.obj$nx, j = 1:mkde.obj$ny))
+  mkde.obj$z.min[ij] <- z.tmp
   i <- which(is.na(mkde.obj$z.min))
   zCellSize <- mkde.obj$z[2] - mkde.obj$z[1]
-  mkde.obj$z.min[i] <- (min(mkde.obj$z) - zCellSize)
+  mkde.obj$z.min[i] <- min(mkde.obj$z) - zCellSize
   return(mkde.obj)
 }
 
-# Set z upper bound from raster
-setMaximumZfromRaster <- function(mkde.obj, raster.layer) {
-  xy <- expand.grid(x=mkde.obj$x, y=mkde.obj$y)
-  z.tmp <- extract(raster.layer, xy)
-  # now put in mkde.obj$z.max
-  ij <- as.matrix(expand.grid(i=1:mkde.obj$nx, j=1:mkde.obj$ny))
-  mkde.obj$z.max[ij] <- as.numeric(z.tmp)
+setMaximumZfromRaster <- function(mkde.obj, spat.raster) {
+  xy <- base::expand.grid(x=mkde.obj$x, y=mkde.obj$y)
+  z.tmp <- terra::extract(spat.raster, xy)
+  z.tmp <- as.list(z.tmp[2])$layer ### OLD z.tmp <- z.tmp$lyr.1
+  ij <- base::as.matrix(base::expand.grid(i = 1:mkde.obj$nx, j = 1:mkde.obj$ny))
+  mkde.obj$z.max[ij] <- z.tmp
   i <- which(is.na(mkde.obj$z.max))
   zCellSize <- mkde.obj$z[2] - mkde.obj$z[1]
-  mkde.obj$z.max[i] <-(max(mkde.obj$z) + zCellSize)
+  mkde.obj$z.max[i] <- max(mkde.obj$z) - zCellSize
   return(mkde.obj)
 }
 
@@ -168,7 +166,7 @@ estVarMKDE <- function(move.dat) {
   i.fm <- i-1
   i.to <- i+1
   dt.i <- t.dat[i.to] - t.dat[i.fm]
-  if ((length(na.omit(dt.i)) > 0) & (all(dt.i > 0))) {
+  if ((length(stats::na.omit(dt.i)) > 0) & (all(dt.i > 0))) {
     alpha.i <- (t.dat[i] - t.dat[i.fm])/dt.i
     varfact <- dt.i*alpha.i*(1 - alpha.i)
     varterm <- sig2[i.fm]*(1 - alpha.i)^2 + sig2[i.to]*alpha.i^2
@@ -366,8 +364,8 @@ mkde3Dinteraction <- function(mkde.obj, move.dat0, move.dat1, t.step, d.thresh) 
 computeAreaRaster <- function(RelevMatrix, RcellSize) {
 	out <- .Call( "computeCellSurfaceArea",RelevMatrix,
                      RcellSize, PACKAGE = "mkde" )
-  out2 <- matrix(out, nrow=nrow(RelevMatrix), 
-                 ncol=ncol(RelevMatrix), byrow=TRUE)
+  out2 <- matrix(out, nrow=base::nrow(RelevMatrix), 
+                 ncol=base::ncol(RelevMatrix), byrow=TRUE)
   return(out)
 }
 
@@ -423,7 +421,7 @@ computeContourValues <- function(mkde.obj, prob) {
   nq <- length(a)
   thresh <- rep(NA, nq)
   for (i in 1:nq) {
-    j <- na.omit(which(d3 <= a[i]))
+    j <- stats::na.omit(which(d3 <= a[i]))
     if (length(j) > 0) {
       thresh[i] <- d2[max(j)]
     }
@@ -439,7 +437,7 @@ computeContourValues <- function(mkde.obj, prob) {
 #   return the results
 computeSizeMKDE <- function(mkde.obj, prob) {
   cntrs <- computeContourValues(mkde.obj, prob)
-  nc <- nrow(cntrs)
+  nc <- base::nrow(cntrs)
   out <- rep(NA, nc)
   xSz <- mkde.obj$x[2] - mkde.obj$x[1]
   ySz <- mkde.obj$y[2] - mkde.obj$y[1]
@@ -471,36 +469,75 @@ plotMKDE <- function(mkde.obj, z.index=1, probs=c(0.99, 0.95, 0.90, 0.75, 0.5, 0
     dens.dat <- mkde.obj$d[,,1]
   }
   cont.vals <- computeContourValues(mkde.obj, probs)
-  image(mkde.obj$x, mkde.obj$y, dens.dat, breaks=cont.vals$threshold, col=cmap, add=add, ...)
+  graphics::image(mkde.obj$x, mkde.obj$y, dens.dat, breaks=cont.vals$threshold, col=cmap, add=add, ...)
 }
 
 # ---------------------------------------------------------------------
 # Functions to write output in other formats
 # ---------------------------------------------------------------------
 
-# convert an mkde object to a RasterLayer or RasterStack (if 3D)
-mkdeToRaster <- function(mkde.obj) {
+# mkdeToTerra converts an mkde object to a SpatRaster
+mkdeToTerra <- function(mkde.obj) {
+  
   sx <- mkde.obj$x[2] - mkde.obj$x[1]
   sy <- mkde.obj$y[2] - mkde.obj$y[1]
-  rst.res <- NA
+  
   if (mkde.obj$dimension == 2 | mkde.obj$dimension == 2.5) {
-    # make a raster layer
-    rst.res <- raster(t(matrix(mkde.obj$d[,,1], nrow=mkde.obj$nx, ncol=mkde.obj$ny))[mkde.obj$ny:1,], 
-                      xmn=(mkde.obj$x[1] - 0.5*sx), xmx=(mkde.obj$x[mkde.obj$nx] + 0.5*sx), 
-                      ymn=(mkde.obj$y[1] - 0.5*sy), ymx=(mkde.obj$y[mkde.obj$ny] + 0.5*sy))
-  } else if (mkde.obj$dimension == 3) {
-    # make a raster stack
-    rst.res <- stack()
-    for (k in 1:mkde.obj$nz) {
-      rst.tmp <- raster::raster(t(matrix(mkde.obj$d[,,k], nrow=mkde.obj$nx, ncol=mkde.obj$ny))[mkde.obj$ny:1,], 
-                        xmn=(mkde.obj$x[1] - 0.5*sx), xmx=(mkde.obj$x[mkde.obj$nx] + 0.5*sx), 
-                        ymn=(mkde.obj$y[1] - 0.5*sy), ymx=(mkde.obj$y[mkde.obj$ny] + 0.5*sy))
-      rst.res <- addLayer(rst.res, rst.tmp)
-    }
-    names(rst.res) <- paste("z=", mkde.obj$z, sep="")
+    
+    # Calculate the extent using the calculated values
+    extent <- c(min(mkde.obj$x) - 0.5 * sx, max(mkde.obj$x) + 0.5 * sx,
+                min(mkde.obj$y) - 0.5 * sy, max(mkde.obj$y) + 0.5 * sy)
+    
+    rst <- terra::rast(nrow = mkde.obj$ny, ncol = mkde.obj$nx, xmin = extent[1], xmax = extent[2],
+                ymin = extent[3], ymax = extent[4], crs = st_crs("+proj=longlat"))
+    
+    # Transpose and then flip vertically by reversing rows
+    d_matrix <- base::t(matrix(mkde.obj$d[,,1], nrow = mkde.obj$nx, ncol = mkde.obj$ny))
+    d_flipped <- d_matrix[base::nrow(d_matrix):1, ]
+    
+    # Assign the flipped matrix to the raster
+    terra::values(rst) <- d_flipped
+    
+    return(rst)
+    
+  } 
+  
+  else {
+    
+    stop("Only 2D and 2.5D MKDE objects are currently supported")
+    
   }
-  return(rst.res)
+  
 }
+
+terraToContour <- function(terra.obj, levels, crsstr) {
+  
+  # Check if terra.obj is NULL or empty
+  if (is.null(terra.obj)|| sum(!is.na(terra::values(terra.obj))) == 0) {
+    
+    stop("SpatRaster object is empty or NULL.")
+    
+  }
+  
+  if (is.null(levels) || is.null(crsstr))
+  {
+    
+    stop("Proper input must be provided.")
+    
+  }
+  
+  # Create contours from mkde_terra and set its CRS
+  terra_contour <- terra::as.contour(terra.obj, levels = levels)
+  terra::crs(terra_contour) <- crsstr
+  
+  # Transform it to an sf object and set its CRS to longlat
+  sf_contour <- sf::st_as_sf(terra_contour)
+  sf_contour <- sf::st_transform(sf_contour, crs="+proj=longlat")
+  
+  return(sf_contour)
+  
+}
+
 
 # Write 3D MKDE in VTK format
 writeToVTK <- function(mkde.obj, fname, description="3D MKDE", cumprob=FALSE) {
@@ -550,47 +587,47 @@ writeToXDMF <- function(mkde.obj, fname, nodat="NA", cumprob=FALSE) {
 }
 
 writeRasterToXDMF <- function(rast, fname, nodat="NA") {
-  r.xy <- coordinates(rast)
-  ext <- extent(rast)
-  n.xy <- dim(rast)
-  cell.sz <- res(rast)
-  r.x <- ext@xmin + 0.5*cell.sz[1] + (0:(n.xy[2] - 1))*cell.sz[1]
-  r.y <- ext@ymin + 0.5*cell.sz[2] + (0:(n.xy[1] - 1))*cell.sz[2]
-  r.v <- values(rast, format="matrix")
-  nrw <- nrow(r.v)
-  ncl <- ncol(r.v)
-  r.v <- t(r.v[nrw:1,]) # flip
+  r.xy <- terra::xyFromCell(rast, 1:terra::ncell(rast))
+  ext <- terra::ext(rast)
+  n.xy <- base::dim(rast)
+  cell.sz <- terra::res(rast)
+  r.x <- ext[1] + 0.5 * cell.sz[1] + (0:(n.xy[2] - 1)) * cell.sz[1]
+  r.y <- ext[3] + 0.5 * cell.sz[2] + (0:(n.xy[1] - 1)) * cell.sz[2]
+  nrw <- base::nrow(rast)
+  ncl <- base::ncol(rast)
+  r.v <- t(matrix(rast, nrow=ncl, ncol=nrw)) # flipped because of transposition
+  r.v <- base::t(r.v[nrw:1,]) # flip
   r.v <- as.vector(r.v, mode="numeric")
   fnXDMF <- paste(fname, ".xdmf", sep="")
   fnDAT <- paste(fname, ".dat", sep="")
-  .Call("writeRasterToXDMF", r.x, r.y, r.v, fnXDMF, fnDAT, PACKAGE = "mkde")
+  
+  .Call("writeRasterToXDMF02", r.x, r.y, r.v, fnXDMF, fnDAT, PACKAGE = "mkde")
 }
 
 writeRasterToVTK <- function(elev, r.rst, g.rst, b.rst, descr, fname) {
-  # make sure all rasters are same dims, etc.
-  r.xy <- coordinates(elev)
-  ext <- extent(elev)
-  n.xy <- dim(elev)
-  cell.sz <- res(elev)
-  r.x <- ext@xmin + 0.5*cell.sz[1] + (0:(n.xy[2] - 1))*cell.sz[1]
-  r.y <- ext@ymin + 0.5*cell.sz[2] + (0:(n.xy[1] - 1))*cell.sz[2]
-  r.v <- raster::values(elev, format="matrix")
-  nrw <- nrow(r.v)
-  ncl <- ncol(r.v)
-  r.v <- t(r.v[nrw:1,]) # flip
+  r.xy <- terra::xyFromCell(elev, 1:terra::ncell(elev))
+  ext <- terra::ext(elev)
+  n.xy <- base::dim(elev)
+  cell.sz <- terra::res(elev)
+  r.x <- ext[1] + 0.5 * cell.sz[1] + (0:(n.xy[2] - 1)) * cell.sz[1]
+  r.y <- ext[3] + 0.5 * cell.sz[2] + (0:(n.xy[1] - 1)) * cell.sz[2]
+  r.v <- t(matrix(elev, nrow=base::ncol(elev), ncol=base::nrow(elev)))
+  nrw <- base::nrow(r.v)
+  ncl <- base::ncol(r.v)
+  r.v <- base::t(r.v[nrw:1,]) # flip
   r.v <- as.vector(r.v, mode="numeric")
-  #
-  r.r <- values(r.rst, format="matrix")
-  r.r <- t(r.r[nrw:1,]) # flip
+  
+  r.r <- t(matrix(r.rst, nrow=base::ncol(r.rst), ncol=base::nrow(r.rst)))
+  r.r <- base::t(r.r[nrw:1,]) # flip
   r.r <- as.vector(r.r, mode="numeric")
-  r.g <- values(g.rst, format="matrix")
-  r.g <- t(r.g[nrw:1,]) # flip
+  r.g <- t(matrix(g.rst, nrow=base::ncol(g.rst), ncol=base::nrow(g.rst)))
+  r.g <- base::t(r.g[nrw:1,]) # flip
   r.g <- as.vector(r.g, mode="numeric")
-  r.b <- raster::values(b.rst, format="matrix")
-  r.b <- t(r.b[nrw:1,]) # flip
+  r.b <- t(matrix(b.rst, nrow=base::ncol(b.rst), ncol=base::nrow(b.rst)))
+  r.b <- base::t(r.b[nrw:1,]) # flip
   r.b <- as.vector(r.b, mode="numeric")
-  # (SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP filenameVTK)
-  .Call("writeRasterToVTK", r.x, r.y, r.v, r.r, r.g, r.b, descr, fname, PACKAGE="mkde")
+  
+  .Call("writeRasterToVTK02", r.x, r.y, r.v, r.r, r.g, r.b, descr, fname, PACKAGE="mkde")
 }
 
 writeObservedLocationVTK <- function(move.dat, mkde.obj, 

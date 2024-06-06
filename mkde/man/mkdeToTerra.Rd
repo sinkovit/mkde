@@ -1,5 +1,5 @@
-\name{mkdeToRaster}
-\alias{mkdeToRaster}
+\name{mkdeToTerra}
+\alias{mkdeToTerra}
 \title{
 MKDE to RasterLayer or RasterStack
 }
@@ -8,7 +8,7 @@ Converts an MKDE into a RasterLayer or RasterStack so that raster
 package functions can be used.
 }
 \usage{
-mkdeToRaster(mkde.obj)	
+mkdeToTerra(mkde.obj)	
 }
 \arguments{
   \item{mkde.obj}{A 2D, 2.5D, or 3D MKDE object created with
@@ -34,15 +34,16 @@ level.
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-\dontrun{
-library(raster)
+library(terra)
+
 # set up MKDE object
-data(pandadem)
+fpath <- system.file("extdata", "pandadem.RDS", package="mkde")
+pandadem <- terra::readRDS(fpath)
 cell.sz <- mean(res(pandadem))
-ext <- extent(pandadem)
+ext <- ext(pandadem)
 nx <- ncol(pandadem)
 ny <- nrow(pandadem)
-mkde.obj <- initializeMKDE2D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz, ny)
+mkde.obj <- initializeMKDE2D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz, ny)
 
 # set up movement data
 data(panda)
@@ -53,7 +54,6 @@ sig2obs=25.0, t.max=185.0)
 dens.res <- initializeDensity(mkde.obj, mv.dat)
 mkde.obj <- dens.res$mkde.obj
 mv.dat <- dens.res$move.dat
-mkde.rst <- mkdeToRaster(mkde.obj)
+mkde.rst <- mkdeToTerra(mkde.obj)
 plot(mkde.rst)
-}
 }

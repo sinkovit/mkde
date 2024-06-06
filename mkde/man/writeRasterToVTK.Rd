@@ -38,8 +38,9 @@ writeRasterToVTK(elev, r.rst, g.rst, b.rst, descr, fname)
   \email{amit@sdsc.edu}
 }
 \examples{
-library(raster)
-data(condordem120)
+library(terra)
+fpath <- system.file("extdata", "condordem120.RDS", package="mkde")
+condordem120 <- terra::readRDS(fpath)
 elev.val <- values(condordem120)
 elev.min <- min(elev.val, na.rm=TRUE)
 elev.max <- max(elev.val, na.rm=TRUE)
@@ -53,16 +54,19 @@ cmap <- data.frame(value=c(0.0, 0.25, 0.5, 0.75, 1.0),
 cmap$value <- cmap$value*(elev.max - elev.min) + elev.min
 # red
 f.R <- approxfun(cmap$value, cmap$R)
-elev.r <- raster(condordem120)
+elev.r <- rast(condordem120)
 values(elev.r) <- round(f.R(elev.val))
 # green
 f.G <- approxfun(cmap$value, cmap$G)
-elev.g <- raster(condordem120)
+elev.g <- rast(condordem120)
 values(elev.g) <- round(f.G(elev.val))
 # blue
 f.B <- approxfun(cmap$value, cmap$B)
-elev.b <- raster(condordem120)
+elev.b <- rast(condordem120)
 values(elev.b) <- round(f.B(elev.val))
 writeRasterToVTK(condordem120, elev.r, elev.g, elev.b, "Elevation for
 California condor Example", "condor_dem.vtk")
+
+# Clean up files
+unlink("condor_dem.vtk")
 }

@@ -46,7 +46,7 @@ mkde2Dinteraction(mkde.obj, move.dat0, move.dat1, t.step, d.thresh)
   \email{jzhu@stat.wisc.edu}
 }
 \examples{
-library(raster)
+library(terra)
 data(panda)
 mv.dat0 <- initializeMovementData(panda$time, panda$x, panda$y, 
 sig2obs=25.0, t.max=185.0)
@@ -56,12 +56,13 @@ v <- 20.0 # increase from 0 to increase difference
 mv.dat1 <- initializeMovementData(panda$time, panda$x+rnorm(n, 0, v), 
 panda$y+rnorm(n, 0, v), sig2obs=25.0, t.max=185.0)
 
-data(pandadem)
+fpath <- system.file("extdata", "pandadem.RDS", package="mkde")
+pandadem <- terra::readRDS(fpath)
 cell.sz <- mean(res(pandadem))
-ext <- extent(pandadem)
+ext <- ext(pandadem)
 nx <- ncol(pandadem)
 ny <- nrow(pandadem)
-mkde.obj <- initializeMKDE2D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE2D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny)
 
 res <- mkde2Dinteraction(mkde.obj, mv.dat0, mv.dat1, 10.0, 1e-20)

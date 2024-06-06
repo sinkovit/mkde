@@ -1,17 +1,17 @@
 Package: mkde
 Type: Package
-Title: 2D and 3D movement-based kernel density estimates (MKDEs).
-Version: 0.1
-Date: 2011-08-23
-Author: Jeff A. Tracey, James Sheppard, Jun Zhu, Robert Sinkovts, Amit Chourasia, Glenn Lockwood, and Robert N. Fisher
-Maintainer: Jeff A. Tracey <jatracey@usgs.gov>
+Title: 2D and 3D Movement-Based Kernel Density Estimates (MKDEs)
+Version: 0.3
+Date: 2024-05-21
+Author: Jeff A. Tracey, James Sheppard, Jun Zhu, Robert Sinkovts, Amit Chourasia, Glenn Lockwood, Matthew Wang, and Robert N. Fisher
+Maintainer: Robert Sinkovits <sinkovit@sdsc.edu>
 Description: Provides functions to compute and visualize movement-based kernel density estimates (MKDEs) for animal utilization distributions in 2 or 3 spatial dimensions.
 License: GPL (>= 3)
 LazyLoad: yes
-Depends: R (>= 2.10)
-Imports: Rcpp (>= 0.9.6), raster, sp
+Depends: R (>= 3.5.0)
+Imports: Rcpp (>= 0.9.6), sf, terra, stars
 LinkingTo: Rcpp
-Packaged: 2014-08-23 20:26:48 UTC; jeff
+Packaged: 2014-08-23 20:26:48 UTC; robertsinkovits
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2014-08-24 00:26:36
+Date/Publication: 2024-05-22 00:00:00 UTC

@@ -216,6 +216,7 @@ RcppExport SEXP mkde2dGrid02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP useObs,
     Rcpp::NumericVector Y(obsY); // observed y-coordinates
     Rcpp::IntegerVector isValid(useObs); // move step is flagged for use
     long nObs = T.length();
+    int nObsStep;
     // grid speces
     Rcpp::NumericVector xGrid(xgrid); // cell center coordinates in the x-dimension
     Rcpp::NumericVector yGrid(ygrid); // cell center coordinates in the y-dimension
@@ -241,15 +242,21 @@ RcppExport SEXP mkde2dGrid02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP useObs,
     double t0, t1, t, tOld, dt, alpha, totalT;
     // set up tmp variables
     double eX, eY;
-    double sig2xy, sig2xy_inv;
-    double distMaxXY, xyDistSq, voxx, voxy, xyterm;
+    double sig2xy;
+    double distMaxXY;
     int halo1, halo2, i1k, i2k;
 
     // start computing MKDE
     Rcpp::Rcout << "2D MKDE Computation: STARTING" << std::endl;
+    nObsStep = nObs/50;
+    if (nObsStep == 0) {
+      nObsStep = 1;
+    }
     totalT = 0.0;
     for (int j = 0; j < (nObs - 1); j++) {
-        Rcpp::Rcout << "\tProcessing move step " << (j + 1) << " of " << (nObs - 1) << std::endl;
+      if (j % nObsStep == 0) {
+	Rcpp::Rcout << "\tProcessing move step " << (j + 1) << " of " << (nObs - 1) << std::endl;
+      }
         // report percent complete after each observation
         t0 = T[j];
         t1 = T[j + 1];
@@ -266,7 +273,6 @@ RcppExport SEXP mkde2dGrid02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP useObs,
                 sig2xy = dt * alpha * (1.0 - alpha) * msig2xy[j] +
                     osig2xy[j] * (1.0 - alpha) * (1.0 - alpha) +
                     osig2xy[j+1] * alpha * alpha;
-                sig2xy_inv = 1.0/sig2xy;
                 // Get (x,y,z) coordinates of kernel origin using linear interpolation
                 eX = X[j] + alpha * (X[j + 1] - X[j]);
                 eY = Y[j] + alpha * (Y[j + 1] - Y[j]);
@@ -286,7 +292,6 @@ RcppExport SEXP mkde2dGrid02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP useObs,
                     double voxx = xGrid[i1]; // voxel x
                     double xdens = integrateNormal(voxx - 0.5*xSz, voxx + 0.5*xSz, eX, sqrt(sig2xy));
                     for (int i2 = std::max(0, i2k-halo2); i2 < std::min(nY, i2k+halo2); i2++) { // y-dimension
-                        double voxy = yGrid[i2]; // voxel y
                         double pXY = xdens * ydens[i2];
                         double tmpDens;
                         if (doubleEquals(t, t0)) { // first term
@@ -382,17 +387,17 @@ RcppExport SEXP mkde2dGridv02interact(SEXP obsT, SEXP obsX0, SEXP obsY0,
     // set up tmp variables
     double eX0, eY0, eX1, eY1;
     double W0 = 0.0, W1 = 0.0;
-    double totalT; // T, Ttotal
+    // Save for possible later use double totalT; // T, Ttotal
     double sig2xy0, sig2xy1;
-    double distMaxXY0, distMaxXY1, haloMinX, haloMaxX, haloMinY, haloMaxY, xyDistSq, xyterm, bhattaFact;
+    double distMaxXY0, distMaxXY1, haloMinX, haloMaxX, haloMinY, haloMaxY, bhattaFact;
     int halo1min, halo1max, halo2min, halo2max;
 
     // FOLLOWING FOR DEBUGGING
-    int i1min = nX, i1max = 0, i2min = nY, i2max = 0;
+    // int i1min = nX, i1max = 0, i2min = nY, i2max = 0;
 
     // start computing MKDE
     Rcpp::Rcout << "2D MKDE Interaction Computation: STARTING" << std::endl;
-    totalT = 0.0;
+    // Save for possible later use totalT = 0.0;
     for (int j = 0; j < (nObs - 1); j++) {
         Rcpp::Rcout << "\tProcessing move step " << (j + 1) << " of " << (nObs - 1) << std::endl;
         // report percent complete after each observation
@@ -401,7 +406,7 @@ RcppExport SEXP mkde2dGridv02interact(SEXP obsT, SEXP obsX0, SEXP obsY0,
         dt = t1 - t0;
         t = t0;
         if (isValid[j] == 1) {
-            totalT += dt;
+	  // Save for possible later use totalT += dt;
             bool exitLoop = false;
             bool finalLoop = false;
             while (!exitLoop) { // iterate over integration time steps
@@ -452,7 +457,6 @@ RcppExport SEXP mkde2dGridv02interact(SEXP obsT, SEXP obsX0, SEXP obsY0,
                     double xprob1 = integrateNormal(voxx - 0.5*xSz, voxx + 0.5*xSz, eX1, sqrt(sig2xy1));
                     double xbhattdist = integrateKernelBC(voxx - 0.5*xSz, voxx + 0.5*xSz, eX0, sqrt(sig2xy0),eX1, sqrt(sig2xy1), pdfMin[0]);
                     for (int i2 = std::max(0, halo2min); i2 < std::min(nY, halo2max); i2++) { // y-dimension
-                        double voxy = yGrid[i2]; // voxel y
                         // Calculate contribution of kernel to voxel
                         double pXY0 = xprob0*yprob0[i2];
                         double pXY1 = xprob1*yprob1[i2];
@@ -562,14 +566,14 @@ RcppExport SEXP mkde3dGridv02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP obsZ, SEXP u
     // set up time variables
     double t0, t1, t, tOld, dt, alpha;
     // set up tmp variables
-    double eX, eY, eZ, factor;
+    double eX, eY, eZ;
     double W;
-    double sig2xy, sig2z, sig2xy_inv, sig2z_inv;
-    double distMaxXY, distMaxZ, xyDistSq, zDistSq, tmpZ, xyterm;
+    double sig2xy, sig2z;
+    double distMaxXY, distMaxZ;
     int halo1, halo2, halo3, i1k, i2k, i3k;
 
     // FOLLOWING FOR DEBUGGING
-    int i1min = nX, i1max = 0, i2min = nY, i2max = 0, i3min = nZ, i3max = 0;
+    // int i1min = nX, i1max = 0, i2min = nY, i2max = 0, i3min = nZ, i3max = 0;
 
     // start computing MKDE
     Rcpp::Rcout << "3D MKDE Computation: STARTING" << std::endl;
@@ -621,7 +625,6 @@ RcppExport SEXP mkde3dGridv02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP obsZ, SEXP u
                     double voxx = xGrid[i1]; // voxel x
                     double xdens = integrateNormal(voxx - 0.5*xSz, voxx + 0.5*xSz, eX, sqrt(sig2xy));
                     for (int i2 = std::max(0, i2k-halo2); i2 < std::min(nY, i2k+halo2); i2++) { // y-dimension
-                        double voxy = yGrid[i2]; // voxel y
                         // get the range of indexes and coordinates based on the physical boundaries
                         int i3lo = std::max(0, getLowerCellIndex(zMin(i1, i2), zGrid[0], zSz));
                         int i3hi = std::min(nZ, getUpperCellIndex(zMax(i1, i2), zGrid[0], zSz) + 1); // add 1 because less than
@@ -633,7 +636,6 @@ RcppExport SEXP mkde3dGridv02(SEXP obsT, SEXP obsX, SEXP obsY, SEXP obsZ, SEXP u
                         //
                         for (int i3 = std::max(i3lo, i3k-halo3); i3 < std::min(i3hi, i3k+halo3); i3++) { // z-dimension
                             //
-                            int th_id = omp_get_thread_num();
                             // set up for reflection
                             // only compute if the expected location is within distance of boundary
                             double voxz = zGrid[i3];
@@ -768,13 +770,12 @@ RcppExport SEXP mkde3dGridv02interact(SEXP obsT, SEXP obsX0, SEXP obsY0, SEXP ob
     double eX0, eY0, eZ0, eX1, eY1, eZ1;
     double W0 = 0.0, W1 = 0.0;
     double sig2xy0, sig2z0, sig2xy1, sig2z1;
-    double distMaxXY0, distMaxXY1, distMaxZ0, distMaxZ1, xyDistSq, zDistSq, tmpZ, xyterm, bhattaFact;
+    double distMaxXY0, distMaxXY1, distMaxZ0, distMaxZ1, bhattaFact;
     double haloMinX, haloMaxX, haloMinY, haloMaxY, haloMinZ, haloMaxZ;
-    double loReflZ1, hiReflZ1;
     int halo1min, halo1max, halo2min, halo2max, halo3min, halo3max; //, i1k, i2k, i3k;
 
     // FOLLOWING FOR DEBUGGING
-    int i1min = nX, i1max = 0, i2min = nY, i2max = 0, i3min = nZ, i3max = 0;
+    // int i1min = nX, i1max = 0, i2min = nY, i2max = 0, i3min = nZ, i3max = 0;
 
     // start computing MKDE
     Rcpp::Rcout << "3D MKDE Interaction Computation: STARTING" << std::endl;
@@ -859,7 +860,6 @@ RcppExport SEXP mkde3dGridv02interact(SEXP obsT, SEXP obsX0, SEXP obsY0, SEXP ob
                     double xprob1 = integrateNormal(voxx - 0.5*xSz, voxx + 0.5*xSz, eX1, sqrt(sig2xy1));
                     double xbhattdist = integrateKernelBC(voxx - 0.5*xSz, voxx + 0.5*xSz, eX0, sqrt(sig2xy0),eX1, sqrt(sig2xy1), pdfMin[0]);
                     for (int i2 = std::max(0, halo2min); i2 < std::min(nY, halo2max); i2++) { // y-dimension
-                        double voxy = yGrid[i2]; // voxel y
                         // get the range of indexes and coordinates based on the physical boundaries
                         int i3lo = std::max(0, getLowerCellIndex(zMin(i1, i2), zGrid[0], zSz));
                         int i3hi = std::min(nZ, getUpperCellIndex(zMax(i1, i2), zGrid[0], zSz) + 1); // add 1 because less than
@@ -1281,12 +1281,11 @@ RcppExport SEXP writeMKDE3DtoXDMF(SEXP xgrid, SEXP ygrid, SEXP zgrid, SEXP densi
     return Rcpp::wrap(1);
 }
 
-RcppExport SEXP writeRasterToXDMF(SEXP xgrid, SEXP ygrid, SEXP rast, SEXP filenameXDMF, SEXP filenameDAT) {
+RcppExport SEXP writeRasterToXDMF02(SEXP xgrid, SEXP ygrid, SEXP rast, SEXP filenameXDMF, SEXP filenameDAT) {
     Rcpp::NumericVector xGrid(xgrid); // cell centers in the x-dimension
     Rcpp::NumericVector yGrid(ygrid); // cell centers in the y-dimension
     int nX = (long)xGrid.length();
     int nY = (long)yGrid.length();
-    long ijk = 0;
     double xSz = xGrid[1] - xGrid[0];
     double ySz = yGrid[1] - yGrid[0];
     double densTmp;
@@ -1383,15 +1382,11 @@ RcppExport SEXP writeRasterToXDMF(SEXP xgrid, SEXP ygrid, SEXP rast, SEXP filena
 }
 
 
-RcppExport SEXP writeRasterToVTK(SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP description, SEXP filenameVTK) {
+RcppExport SEXP writeRasterToVTK02(SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd, SEXP gr, SEXP bl, SEXP description, SEXP filenameVTK) {
     Rcpp::NumericVector xGrid(xgrid); // cell centers in the x-dimension
     Rcpp::NumericVector yGrid(ygrid); // cell centers in the y-dimension
     int nX = (long)xGrid.length();
     int nY = (long)yGrid.length();
-    long ijk = 0;
-    double xSz = xGrid[1] - xGrid[0];
-    double ySz = yGrid[1] - yGrid[0];
-    double densTmp;
     std::string descr = Rcpp::as<std::string>(description);
     std::vector<double> r = Rcpp::as<std::vector<double> >(elev);
     std::vector<double> red = Rcpp::as<std::vector<double> >(rd);

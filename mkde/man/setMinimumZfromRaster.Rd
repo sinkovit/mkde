@@ -8,12 +8,12 @@ Set the lower bounds in the z-dimension for each location in the x and y
 dimensions from a raster.
 }
 \usage{
-setMinimumZfromRaster(mkde.obj, raster.layer)	
+setMinimumZfromRaster(mkde.obj, spat.raster)
 }
 \arguments{
   \item{mkde.obj}{A 2D or 3D MKDE object created with
     \code{initialize3DMKDE} or \code{initialize3DMKDE}, respectively}
-  \item{raster.layer}{A RasterLayer object representing the lower bounds
+  \item{spat.raster}{A RasterLayer object representing the lower bounds
     of the space the animal may occupy in the z-dimension.}
 }
 \details{
@@ -34,13 +34,14 @@ An updated MKDE list object is returned.
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
-data(dugongdem)
+library(terra)
+fpath <- system.file("extdata", "dugongdem.RDS", package="mkde")
+dugongdem <- terra::readRDS(fpath)
 cell.sz <- mean(res(dugongdem))
-ext <- extent(dugongdem)
+ext <- ext(dugongdem)
 nx <- ncol(dugongdem)
 ny <- nrow(dugongdem)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE3D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny, min(values(dugongdem), na.rm=TRUE), 50.0, 15)
 mkde.obj <- setMinimumZfromRaster(mkde.obj, dugongdem-20.0)
 }

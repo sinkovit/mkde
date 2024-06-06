@@ -112,10 +112,10 @@ RcppExport SEXP writeMKDE3DtoGRASS(SEXP xgrid, SEXP ygrid, SEXP zgrid, SEXP dens
 RcppExport SEXP writeMKDE3DtoXDMF(SEXP xgrid, SEXP ygrid, SEXP zgrid, SEXP density,
                                   SEXP filenameXDMF, SEXP filenameDAT);
 
-RcppExport SEXP writeRasterToXDMF(SEXP xgrid, SEXP ygrid, SEXP rast,
+RcppExport SEXP writeRasterToXDMF02(SEXP xgrid, SEXP ygrid, SEXP rast,
                                   SEXP filenameXDMF, SEXP filenameDAT);
 
-RcppExport SEXP writeRasterToVTK(SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd,
+RcppExport SEXP writeRasterToVTK02(SEXP xgrid, SEXP ygrid, SEXP elev, SEXP rd,
                                  SEXP gr, SEXP bl, SEXP description, SEXP filenameVTK);
 
 #endif

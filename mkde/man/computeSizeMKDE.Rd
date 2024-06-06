@@ -30,18 +30,20 @@ A vector with the areas or volumes is returned.
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
+library(terra)
 data(condor)
-condor <- condor[1:10,] # simply to make example run more quickly
+
+condor <- condor[1:20,] # simply to make example run more quickly
 mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, 
 z.obs=condor$z, sig2obs=25.0, sig2obs.z=81.0, t.max=65.0)
 
-data(condordem120)
+fpath <- system.file("extdata", "condordem120.RDS", package="mkde")
+condordem120 <- terra::readRDS(fpath)
 cell.sz <- mean(res(condordem120))
-ext <- extent(condordem120)
+ext <- ext(condordem120)
 nx <- ncol(condordem120)
 ny <- nrow(condordem120)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE3D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny, min(values(condordem120), na.rm=TRUE), cell.sz, 25)
 
 # note: we use a raster coarse integration time step so the

@@ -23,8 +23,9 @@ James Sheppard, San Diego Zoo Institute for Conservation Research
 Sheppard, J. K., Lawler, I. R., & Marsh, H. (2007). Seagrass as pasture for seacows: Landscape-level dugong habitat evaluation. Estuarine, Coastal and Shelf Science, 71(1), 117-132.
 }
 \examples{
-library(raster)
-data(dugongdem)
+library(terra)
+fpath <- system.file("extdata", "dugongdem.RDS", package="mkde")
+dugongdem <- terra::readRDS(fpath)
 plot(dugongdem)
 }
 \keyword{datasets}

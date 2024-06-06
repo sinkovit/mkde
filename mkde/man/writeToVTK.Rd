@@ -34,22 +34,23 @@ writeToVTK(mkde.obj, fname, description="3D MKDE", cumprob=FALSE)
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
+library(terra)
 data(condor)
-condor <- condor[1:10,] # simply to make example run more quickly
+condor <- condor[1:20,] # simply to make example run more quickly
 mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, 
 z.obs=condor$z, sig2obs=25.0, sig2obs.z=81.0, t.max=65.0)
 
-data(condordem120)
+fpath <- system.file("extdata", "condordem120.RDS", package="mkde")
+condordem120 <- terra::readRDS(fpath)
 # next two lines reduce extent of 2D space to speed execution of example
-tmp <- extent(c(range(condor$x) + c(-100, 100), range(condor$y) + c(-100, 100)))
+tmp <- ext(c(range(condor$x) + c(-100, 100), range(condor$y) + c(-100, 100)))
 condordem120 <- crop(condordem120, tmp)
 
 cell.sz <- mean(res(condordem120))
-ext <- extent(condordem120)
+ext <- ext(condordem120)
 nx <- ncol(condordem120)
 ny <- nrow(condordem120)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE3D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny, min(values(condordem120), na.rm=TRUE), cell.sz, 25)
 
 # note: we use a raster coarse integration time step so the
@@ -61,4 +62,7 @@ mv.dat <- dens.res$move.dat
 # Save as VTK file
 writeToVTK(mkde.obj, "condor_3dMKDE.vtk",
 description="Example California condor 3D MKDE")
+
+# Clean up files
+unlink("condor_3dMKDE.vtk")
 }

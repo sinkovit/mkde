@@ -33,19 +33,23 @@ No value is returned
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
+library(terra)
 data(condor)
 mv.dat <- initializeMovementData(condor$time, condor$x, condor$y, 
 z.obs=condor$z, sig2obs=25.0, sig2obs.z=81.0, t.max=65.0)
 
-data(condordem)
+fpath <- system.file("extdata", "condordem.RDS", package="mkde")
+condordem <- terra::readRDS(fpath)
 cell.sz <- mean(res(condordem))
-ext <- extent(condordem)
+ext <- ext(condordem)
 nx <- ncol(condordem)
 ny <- nrow(condordem)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE3D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny, min(values(condordem), na.rm=TRUE), 30.0, 100)
 
 writeObservedLocationVTK(mv.dat, mkde.obj,
 "Example California condor locations", "condor_locations.vtk")
+
+# Clean up files
+unlink("condor_locations.vtk")
 }

@@ -36,5 +36,5 @@ mv.dat <- estVarMKDE(mv.dat)
 cat(paste("Move variance in xy-dimensions = ",
 mv.dat$sig2xy[1], "\n", sep=""))
 cat(paste("Move variance in z-dimension = ",
-mv.dat$sig2.z[1], "\n", sep=""))
+mv.dat$sig2z[1], "\n", sep=""))
 }

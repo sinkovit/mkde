@@ -38,14 +38,14 @@ No value is returned.
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
-data(pandadem)
+library(terra)
+fpath <- system.file("extdata", "pandadem.RDS", package="mkde")
+pandadem <- terra::readRDS(fpath)
 cell.sz <- 0.25*mean(res(pandadem))
-ext <- extent(pandadem)
+ext <- ext(pandadem)
 nx <- 4*ncol(pandadem)
 ny <- 4*nrow(pandadem)
-mkde.obj <- initializeMKDE2D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
-ny)
+mkde.obj <- initializeMKDE2D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz, ny)
 
 # set up movement data
 data(panda)

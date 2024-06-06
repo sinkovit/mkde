@@ -22,8 +22,9 @@ URL: http://asterweb.jpl.nasa.gov/gdem.asp
 Tachikawa, T., Hato, M., Kaku, M. & Iwasaki, A. (2011). The characteristics of ASTER GDEM version 2, IGARSS.
 }
 \examples{
-library(raster)
-data(condordem)
+library(terra)
+fpath <- system.file("extdata", "condordem.RDS", package="mkde")
+condordem <- terra::readRDS(fpath)
 plot(condordem)
 }
 \keyword{datasets}

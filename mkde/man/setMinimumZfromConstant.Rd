@@ -31,13 +31,14 @@ An updated MKDE list object is returned.
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
-data(dugongdem)
+library(terra)
+fpath <- system.file("extdata", "dugongdem.RDS", package="mkde")
+dugongdem <- terra::readRDS(fpath)
 cell.sz <- mean(res(dugongdem))
-ext <- extent(dugongdem)
+ext <- ext(dugongdem)
 nx <- ncol(dugongdem)
 ny <- nrow(dugongdem)
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE3D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny, min(values(dugongdem), na.rm=TRUE), 50.0, 15)
 mkde.obj <- setMinimumZfromConstant(mkde.obj, -20.0)
 }

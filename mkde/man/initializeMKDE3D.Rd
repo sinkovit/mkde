@@ -55,14 +55,15 @@ A list representing an MKDE object is returned with the following elements:
   \email{jsheppard@sandiegozoo.org}
 }
 \examples{
-library(raster)
-data(condordem)
+library(terra)
+fpath <- system.file("extdata", "condordem.RDS", package="mkde")
+condordem <- terra::readRDS(fpath)
 cell.sz <- mean(res(condordem))
-ext <- extent(condordem)
+ext <- ext(condordem)
 nx <- ncol(condordem)
 ny <- nrow(condordem)
 zmin <- min(values(condordem), na.rm=TRUE)
 nz <- 30
-mkde.obj <- initializeMKDE3D(ext@xmin, cell.sz, nx, ext@ymin, cell.sz,
+mkde.obj <- initializeMKDE3D(ext$xmin, cell.sz, nx, ext$ymin, cell.sz,
 ny, zmin, cell.sz, nz)
 }

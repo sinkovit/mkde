@@ -38,8 +38,9 @@ computeAreaRaster(RelevMatrix, RcellSize)
   unprojected digital elevation models. In preparation.
 }
 \examples{
-library(raster)
-data(condordem)
+library(terra)
+fpath <- system.file("extdata", "condordem.RDS", package="mkde")
+condordem <- terra::readRDS(fpath)
 cell.sz <- mean(res(condordem))
-area.rast <- computeAreaRaster(as.matrix(condordem), cell.sz)
+area.rast <- computeAreaRaster(as.matrix(condordem, wide=TRUE), cell.sz)
 }
