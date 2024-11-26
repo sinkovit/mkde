@@ -7,7 +7,6 @@ A RasterLayer containing a digital elevation model (DEM) for the condor data
 \description{
 Digital elevation model of the terrain within the condor's range with a cell resolution of 120 meters (ASTER GDEM version 2, Tachikawa et. al. 2011).
 }
-\usage{data(condordem120)}
 \format{
   A raster package RasterLayer object with 188 rows, 156 columns, and
   a cell size of 120 by 120 meters. Each cell contains an elevation in meters.

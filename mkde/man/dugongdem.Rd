@@ -7,7 +7,6 @@ A RasterLayer containing bathymetry for the dugong data
 \description{
 A 10-meter resolution bathymetric surface of the core seagrass habitat in depth below the mean sea level within the dugong's range (Sheppard et. al. 2007).
 }
-\usage{data(dugongdem)}
 \format{
   A raster package RasterLayer object with 220 rows, 485 columns, and
   a cell size of 10 by 10 meters. Each cell contains a depth at low tide
